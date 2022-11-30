@@ -1,0 +1,18 @@
+[flake8]
+extend-ignore =
+    E231, E241,
+    E741,
+exclude =
+    .git,
+    .ipynb_checkpoints,
+    .mypy_cache,
+    .pytest_cache,
+    .eggs,
+    *.egg,
+    *.ipynb,
+    __pycache__,
+    docs,
+max-complexity = 10
+max-line-length = 100
+max-doc-length = 100
+count = True
