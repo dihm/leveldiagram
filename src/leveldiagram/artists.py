@@ -9,6 +9,84 @@ import warnings
 affine = mpl.transforms.Affine2D
 
 
+class EnergyLevel(mpl.lines.Line2D):
+    """
+    Energy level artist.
+    """
+
+    def __str__(self):
+        if self._energy is None:
+            return "EnergyLevel()"
+        else:
+            return "EnergyLevel((%g,%g))" % (self._xpos, self._energy)
+
+    def __init__(self, energy, xposition, width,
+                 right_text='', left_text='',
+                 top_text='', bottom_text='',
+                 **kwargs):
+
+        self._energy = energy
+        self._xpos = xposition
+        self._width = width
+        # we'll update the position when the line data is set
+        self.text_labels = {'right': mpl.text.Text(xposition + width/2,
+                                                   energy, right_text, ha='left', va='center'),
+                            'left': mpl.text.Text(xposition - width/2,
+                                                  energy, left_text, ha='right', va='center'),
+                            'top': mpl.text.Text(xposition,
+                                                 energy, top_text, ha='center', va='bottom'),
+                            'bottom': mpl.text.Text(xposition,
+                                                    energy, bottom_text, ha='center', va='top')}
+
+        x = (xposition - width/2, xposition + width/2)
+        y = (energy, energy)
+
+        super().__init__(x, y, **kwargs)
+
+    def get_center(self):
+
+        return self._energy, self._xpos
+
+    def get_left(self):
+
+        return self._energy, self._xpos - self._width/2
+
+    def get_right(self):
+
+        return self._energy, self._xpos + self._width/2
+
+    def set_figure(self, figure):
+        for side, label in self.text_labels.items():
+            label.set_figure(figure)
+        super().set_figure(figure)
+
+    def set_axes(self, axes):
+        for side, label in self.text_labels.items():
+            label.set_axes(axes)
+        super().set_axes(axes)
+
+    def set_transform(self, transform):
+        # pixel offsets
+        pad = 6
+        offsets = {'right':(pad, 0),
+                   'left':(-pad, 0),
+                   'top':(0, pad),
+                   'bottom':(0, -pad)}
+        for side, label in self.text_labels.items():
+            label.set_transform(transform + affine().translate(*offsets[side]))
+        super().set_transform(transform)
+
+    def set_data(self, x, y):
+
+        super().set_data(x, y)
+
+    def draw(self, renderer):
+        # draw my label at the end of the line with 2 pixel offset
+        super().draw(renderer)
+        for side, label in self.text_labels.items():
+            label.draw(renderer)
+
+
 class Coupling(mpl.lines.Line2D):
     """
     Coupling artist for showing couplings between levels.
