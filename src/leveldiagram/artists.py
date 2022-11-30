@@ -3,13 +3,14 @@ Customized matplotlib artist primitives
 """
 
 import matplotlib as mpl
+from matplotlib.lines import Line2D
 import numpy as np
 import warnings
 
 affine = mpl.transforms.Affine2D
 
 
-class EnergyLevel(mpl.lines.Line2D):
+class EnergyLevel(Line2D):
     """
     Energy level artist.
     """
@@ -87,7 +88,7 @@ class EnergyLevel(mpl.lines.Line2D):
             label.draw(renderer)
 
 
-class Coupling(mpl.lines.Line2D):
+class Coupling(Line2D):
     """
     Coupling artist for showing couplings between levels.
     """
