@@ -21,40 +21,87 @@ class EnergyLevel(Line2D):
         else:
             return "EnergyLevel((%g,%g))" % (self._xpos, self._energy)
 
-    def __init__(self, energy, xposition, width,
+    def __init__(self, energy, xpos, width,
                  right_text='', left_text='',
                  top_text='', bottom_text='',
+                 text_kw = {},
                  **kwargs):
+        """
+        
+        Parameters
+        ----------
+
+        energy: float
+            y-axis position of the level
+        xpos: float
+            x-axis position of the level
+        width: float
+            Width of the level line, in units of the x-axis
+        right_text: str, optional
+            Text to put to the right of the level
+        left_text: str, optional
+            Text to put to the left of the level
+        top_text: str, optional
+            Text to put above the level
+        bottom_text: str, optional
+            Text to put below the level
+        text_kw: dict, optional
+            Dictionary of keyword-arguments passed to matplotlib.text.Text
+        kwargs:
+            Passed to the Line2D constructor
+        """
 
         self._energy = energy
-        self._xpos = xposition
+        self._xpos = xpos
         self._width = width
         # we'll update the position when the line data is set
-        self.text_labels = {'right': mpl.text.Text(xposition + width/2,
-                                                   energy, right_text, ha='left', va='center'),
-                            'left': mpl.text.Text(xposition - width/2,
-                                                  energy, left_text, ha='right', va='center'),
-                            'top': mpl.text.Text(xposition,
-                                                 energy, top_text, ha='center', va='bottom'),
-                            'bottom': mpl.text.Text(xposition,
-                                                    energy, bottom_text, ha='center', va='top')}
+        self.text_labels = {'right': mpl.text.Text(xpos + width/2,
+                                                   energy, right_text,
+                                                   ha='left', va='center', **text_kw),
+                            'left': mpl.text.Text(xpos - width/2,
+                                                  energy, left_text,
+                                                  ha='right', va='center', **text_kw),
+                            'top': mpl.text.Text(xpos,
+                                                 energy, top_text,
+                                                 ha='center', va='bottom', **text_kw),
+                            'bottom': mpl.text.Text(xpos,
+                                                    energy, bottom_text,
+                                                    ha='center', va='top', **text_kw)}
 
-        x = (xposition - width/2, xposition + width/2)
+        x = (xpos - width/2, xpos + width/2)
         y = (energy, energy)
 
         super().__init__(x, y, **kwargs)
 
     def get_center(self):
 
-        return self._energy, self._xpos
+        return np.array((self._xpos, self._energy), dtype=float)
 
     def get_left(self):
 
-        return self._energy, self._xpos - self._width/2
+        return np.array((self._xpos - self._width/2, self._energy), dtype=float)
 
     def get_right(self):
 
-        return self._energy, self._xpos + self._width/2
+        return np.array((self._xpos + self._width/2, self._energy), dtype=float)
+
+    def get_anchor(self, loc='center'):
+
+        if loc == 'center':
+            anchor = self.get_center()
+        elif loc == 'left':
+            anchor = self.get_left()
+        elif loc == 'right':
+            anchor = self.get_right()
+        else:
+            if len(loc) == 2:
+                loc = np.array(loc)
+                anchor = self.get_center() - loc
+            else:
+                raise TypeError('loc must iterable of two elements if not using keys')
+        
+        return anchor
+
 
     def set_figure(self, figure):
         for side, label in self.text_labels.items():
