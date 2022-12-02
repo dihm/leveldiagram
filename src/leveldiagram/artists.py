@@ -7,6 +7,8 @@ from matplotlib.lines import Line2D
 import numpy as np
 import warnings
 
+from .utils import deep_update
+
 affine = mpl.transforms.Affine2D
 
 
@@ -216,13 +218,14 @@ class Coupling(Line2D):
 
     def init_label(self, label, label_offset, label_rot, label_flip, **label_kw):
 
+        # define default softbackground for text
+        bbox_defaults = {'boxstyle':'round,pad=0.05','fc':'w','ec':'none','alpha':0.5}
+        bbox_dict = label_kw.pop('bbox',{})
+        bbox_dict = deep_update(bbox_defaults, bbox_dict)
+        label_kw['bbox'] = bbox_dict
+
         if label_offset == 'center':
             label_ha = 'center'
-            # define softbackground for text
-            bbox_defaults = {'boxstyle':'round,pad=0.05','fc':'w','ec':'none','alpha':0.5}
-            bbox_dict = label_kw.pop('bbox',{})
-            bbox_dict = {**bbox_defaults, **bbox_dict}
-            label_kw['bbox'] = bbox_dict
         # flip to match anchor ha settings
         elif label_offset == 'right':
             label_ha = 'left'
