@@ -209,10 +209,10 @@ class Coupling(Line2D):
 
     def init_arrowheads(self, **kwargs):
 
-        verts = np.array([[-1,0.5],[-1,-0.5],[0,0]])
-        self.head = mpl.patches.Polygon(verts, closed=True, **kwargs)
+        verts = np.array([[-1,0.5],[-1,-0.5],[0,0],[-1,0.5]])
+        self.head = mpl.patches.Polygon(verts, closed=False, **kwargs)
         if self._tail:
-            self.tail = mpl.patches.Polygon(verts, closed=True, **kwargs)
+            self.tail = mpl.patches.Polygon(verts, closed=False, **kwargs)
 
     def init_label(self, label, label_offset, label_rot, label_flip, **label_kw):
 
