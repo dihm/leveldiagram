@@ -32,7 +32,6 @@ class EnergyLevel(Line2D):
         
         Parameters
         ----------
-
         energy: float
             y-axis position of the level
         xpos: float
@@ -50,7 +49,7 @@ class EnergyLevel(Line2D):
         text_kw: dict, optional
             Dictionary of keyword-arguments passed to matplotlib.text.Text
         kwargs:
-            Passed to the Line2D constructor
+            Passed to the `matplotlib.lines.Line2D` constructor
         """
 
         self._energy = energy
@@ -91,6 +90,22 @@ class EnergyLevel(Line2D):
         return np.array((self._xpos + self._width/2, self._energy), dtype=float)
 
     def get_anchor(self, loc='center'):
+        """
+        Returns an anchor on the level in plot coordinates.
+
+        Parameters
+        ----------
+        loc: str or iterable of 2 elements
+            What reference point to return.
+            `'center'`, `'left'`, `'right'` gives those points of the level.
+            A 2-element iterable is interpreted as offsets from the center
+            location.
+
+        Raises
+        ------
+        TypeError
+            If `loc` is not accepted string or a 2-element iterable.
+        """
 
         if loc == 'center':
             anchor = self.get_center()
@@ -134,7 +149,7 @@ class EnergyLevel(Line2D):
         super().set_data(x, y)
 
     def draw(self, renderer):
-        # draw my label at the end of the line with 2 pixel offset
+
         super().draw(renderer)
         for side, label in self.text_labels.items():
             label.draw(renderer)
@@ -160,6 +175,47 @@ class Coupling(Line2D):
                  label_kw=None,
                  **kwargs
                  ):
+        """
+        
+        Parameters
+        ----------
+        start: 2-element iterable
+            Coupling start location in data coordinates
+        stop: 2-element iterable
+            Coupling end location in data coordinates
+        arrowsize: float
+            Size of arrowheads in x-data coordinates
+        arrowratio: float, optional
+            Aspect ratio of the arrowhead.
+            Default is 1 for equal aspect ratio.
+        tail: bool, optional
+            Whether to draw an identical arrowhead at the coupling base.
+            Default is False.
+        arrow_kw: dict, optional
+            Dictionary of keyword arguments to pass to `matplotlib.patches.Polygon` constructor.
+            Note that keyword arguments provided to this function will clobber
+            identical keys provided here.
+        label: str, optional
+            Label string to apply to the coupling.
+            Default is no label.
+        label_offset: str, optional
+            Offset direction for the label.
+            Options are `'center'`, `'left'`, and `'right'`.
+            Default is center of the coupling line.
+        label_rot: bool, optional
+            Label will be justified along the coupling arrow axis if True.
+            Default is False, so label is oriented along x-axis always.
+        label_flip: bool, optional
+            Apply a 180 degree rotation to the label.
+            Default is False.
+        label_kw: dict, optional
+            Dictionary of keyword arguments to pass to the `matplotlib.text.Text` constructor.
+        kwargs:
+            Optional keyword arguments passed to the `matplotlib.lines.Line2D` constructor
+            and the `matplotlib.patches.Polygon` constructor for the arrowhead.
+            Note that `'color'` will be automatically changed to `'facecolor'` for
+            the arrowhead to avoid extra lines.
+        """
 
         if not np.iterable(start) or not np.iterable(stop):
             raise RuntimeError('x/y data must be a sequence of two elements')
@@ -315,6 +371,48 @@ class WavyCoupling(Coupling):
                  label_kw=None,
                  **kwargs
                  ):
+        """
+        
+        Parameters
+        ----------
+        start: 2-element iterable
+            Coupling start location in data coordinates
+        stop: 2-element iterable
+            Coupling end location in data coordinates
+        waveamp: float
+            Amplitude of the sine wave in y-coordinates
+        halfperiod: float
+            Length of a half-period of the sinewave in x-coordinates.
+        arrowsize: float
+            Size of arrowheads in x-data coordinates
+        arrowratio: float, optional
+            Aspect ratio of the arrowhead
+        tail: bool, optional
+            Whether to draw an identical arrowhead at the coupling base.
+            Default is False.
+        arrow_kw: dict, optional
+            Dictionary of keyword arguments to pass to `matplotlib.patches.Polygon` constructor.
+        label: str, optional
+            Label string to apply to the coupling.
+            Default is no label.
+        label_offset: str, optional
+            Offset direction for the label.
+            Options are `'center'`, `'left'`, and `'right'`.
+            Default is center of the coupling line.
+        label_rot: bool, optional
+            Label will be justified along the coupling arrow axis if True.
+            Default is False, so label is oriented along x-axis always.
+        label_flip: bool, optional
+            Apply a 180 degree rotation to the label.
+            Default is False.
+        label_kw: dict, optional
+            Dictionary of keyword arguments to pass to the `matplotlib.text.Text` constructor.
+        kwargs:
+            Optional keyword arguments passed to the `matplotlib.lines.Line2D` constructor
+            and the `matplotlib.patches.Polygon` constructor for the arrowhead.
+            Note that `'color'` will be automatically changed to `'facecolor'` for
+            the arrowhead to avoid extra lines.
+        """
 
         self._waveamp = waveamp
         self._halfperiod = halfperiod
