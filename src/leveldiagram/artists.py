@@ -24,7 +24,7 @@ class EnergyLevel(Line2D):
     def __init__(self, energy, xpos, width,
                  right_text='', left_text='',
                  top_text='', bottom_text='',
-                 text_kw = {},
+                 text_kw = None,
                  **kwargs):
         """
         
@@ -54,6 +54,9 @@ class EnergyLevel(Line2D):
         self._energy = energy
         self._xpos = xpos
         self._width = width
+
+        if text_kw is None:
+            text_kw = {}
         # we'll update the position when the line data is set
         self.text_labels = {'right': mpl.text.Text(xpos + width/2,
                                                    energy, right_text,
@@ -149,10 +152,10 @@ class Coupling(Line2D):
     def __init__(self, start, stop,
                  arrowsize, arrowratio=1,
                  tail=False,
-                 arrow_kw={},
+                 arrow_kw=None,
                  label='', label_offset='center',
                  label_rot=False, label_flip=False,
-                 label_kw={},
+                 label_kw=None,
                  **kwargs
                  ):
 
@@ -164,9 +167,13 @@ class Coupling(Line2D):
         start = np.array(start)
         stop = np.array(stop)
 
+        if arrow_kw is None:
+            arrow_kw = {}
+        if label_kw is None:
+            label_kw = {}
+
         self._start = start
         self._stop = stop
-        self._lw = kwargs.get('linewidth',1)
         self._arrowsize = arrowsize
         self._arrowratio = arrowratio
         self._tail = tail
@@ -295,15 +302,20 @@ class WavyCoupling(Coupling):
     def __init__(self, start, stop,
                  waveamp, halfperiod, arrowsize, arrowratio=1,
                  tail=False,
-                 arrow_kw={},
+                 arrow_kw=None,
                  label='', label_offset='center',
                  label_rot=False, label_flip=False,
-                 label_kw={},
+                 label_kw=None,
                  **kwargs
                  ):
 
         self._waveamp = waveamp
         self._halfperiod = halfperiod
+
+        if arrow_kw is None:
+            arrow_kw = {}
+        if label_kw is None:
+            label_kw = {}
 
         if arrowsize*arrowratio < waveamp:
             warnings.warn('Wave amplitude is larger than arrowhead; result will look funny.')
