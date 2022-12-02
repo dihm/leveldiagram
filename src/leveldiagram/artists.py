@@ -185,6 +185,10 @@ class Coupling(Line2D):
         # initialize arrowheads
         # use line kwargs to set arrow defaults
         arrow_kw.update(kwargs)
+        # use facecolor instead of color
+        color = arrow_kw.pop('color', None)
+        if color is not None:
+            arrow_kw['fc'] = color
         self.init_arrowheads(**arrow_kw)
 
         # initialize label text
