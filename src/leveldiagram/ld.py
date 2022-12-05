@@ -2,9 +2,7 @@
 Base Level Diagram class
 """
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-import itertools
 from copy import deepcopy
 
 from .utils import deep_update, ket_str
@@ -35,7 +33,6 @@ class LD():
         """
         Parameters
         ----------
-        
         graph: networkx.DiGraph or networkx.MultiDiGraph
             Graph object that defines the system to diagram
         ax: matplotlib.Axes, optional
@@ -58,7 +55,6 @@ class LD():
             `WavyCoupling` default values for whole diagram.
             Provided values override class defaults.
             If None, use class defaults.
-
         """
 
         if ax is None:
@@ -148,6 +144,12 @@ class LD():
     def draw(self):
         """
         Add artists to the figure.
+
+        This calls `matplotlib.axes.Axes.autoscale_view` to ensure
+        plot ranges are increased to account for objects.
+
+        It may be necessary to increase plot margins to handle
+        labels near edges of the plot.
         """
         
         self.generate_levels()

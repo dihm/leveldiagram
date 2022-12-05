@@ -6,6 +6,11 @@ Miscellaneous utility functions
 def ket_str(s):
     """
     Put a ket around the string in matplotlib.
+
+    Returns
+    -------
+    str
+        A string that will render as :math:`\\left|\\text{s}\\right\\rangle`
     """
 
     in_s = str(s)
@@ -18,6 +23,11 @@ def ket_str(s):
 def bra_str(s):
     """
     Put a bra around the string in matplotlib.
+
+    Returns
+    -------
+    str
+        A string that will render as :math:`\\left\\langle\\text{s}\\right|`
     """
 
     in_s = str(s)
@@ -31,8 +41,12 @@ def deep_update(mapping, *updating_mappings):
     """
     Helper function to update nested dictionaries.
 
-
     Lifted from pydantic
+
+    Returns
+    -------
+    dict
+        Deep-updated copy of `mapping`
     """
     updated_mapping = mapping.copy()
     for updating_mapping in updating_mappings:
