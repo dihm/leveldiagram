@@ -7,7 +7,7 @@ from matplotlib.lines import Line2D
 import numpy as np
 import warnings
 
-from typing import Optional, Any, Union, Literal, Sequence, Dict, Tuple
+from typing import Optional, Any, Union, Literal, Collection, Dict, Tuple
 
 from .utils import deep_update
 
@@ -114,13 +114,13 @@ class EnergyLevel(Line2D):
         return np.array((self._xpos + self._width / 2, self._energy), dtype=float)
 
     def get_anchor(
-        self, loc: Union[Literal["center", "left", "right"], Sequence] = "center"
+        self, loc: Union[Literal["center", "left", "right"], Collection] = "center"
     ) -> np.ndarray:
         """
         Returns an anchor on the level in plot coordinates.
 
         Parameters:
-            loc (str or iterable of 2 elements): What reference point to return.
+            loc (str or collection of 2 elements): What reference point to return.
                 `'center'`, `'left'`, `'right'` gives those points of the level.
                 A 2-element iterable is interpreted as offsets from the center
                 location.
@@ -202,8 +202,8 @@ class Coupling(Line2D):
 
     def __init__(
         self,
-        start: Sequence,
-        stop: Sequence,
+        start: Collection,
+        stop: Collection,
         arrowsize: float,
         arrowratio: float = 1,
         tail: bool = False,
@@ -217,8 +217,8 @@ class Coupling(Line2D):
     ):
         """
         Parameters:
-            start (2-element sequence): Coupling start location in data coordinates
-            stop (2-element sequence): Coupling end location in data coordinates
+            start (2-element collection): Coupling start location in data coordinates
+            stop (2-element collection): Coupling end location in data coordinates
             arrowsize (float): Size of arrowheads in x-data coordinates
             arrowratio (float, optional): Aspect ratio of the arrowhead.
                 Default is 1 for equal aspect ratio.
@@ -245,7 +245,7 @@ class Coupling(Line2D):
                 the arrowhead to avoid extra lines.
         """
 
-        if not isinstance(start, Sequence) or not isinstance(stop, Sequence):
+        if not isinstance(start, Collection) or not isinstance(stop, Collection):
             raise RuntimeError("x/y data must be a sequence of two elements")
         elif len(start) != 2 or len(stop) != 2:
             raise RuntimeError("x/y data must be a sequence of two elements")
@@ -449,8 +449,8 @@ class WavyCoupling(Coupling):
 
     def __init__(
         self,
-        start: Sequence,
-        stop: Sequence,
+        start: Collection,
+        stop: Collection,
         waveamp: float,
         halfperiod: float,
         arrowsize: float,
@@ -466,8 +466,8 @@ class WavyCoupling(Coupling):
     ):
         """
         Parameters:
-            start (2-element sequence): Coupling start location in data coordinates
-            stop (2-element sequence): Coupling end location in data coordinates
+            start (2-element collection): Coupling start location in data coordinates
+            stop (2-element collection): Coupling end location in data coordinates
             waveamp (float): Amplitude of the sine wave in y-coordiantes
             halfperiod (float): Length of a half-period of the sinewave in x-coordinates.
             arrowsize (float): Size of arrowheads in x-data coordinates
