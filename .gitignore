@@ -73,8 +73,12 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/build/
 docs/source/_examples
+# track pdf docs only
+docs/build/*
+!docs/build/latex
+docs/build/latex/*
+!docs/build/latex/leveldiagram.pdf
 
 # PyBuilder
 target/

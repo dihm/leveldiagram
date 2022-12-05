@@ -105,7 +105,7 @@ html_theme_options = {'navigation_depth': 3}
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_engine = 'lualatex'
+latex_engine = 'pdflatex'
 
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').

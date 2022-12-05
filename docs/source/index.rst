@@ -4,14 +4,13 @@ leveldiagram
 
 A python library for generating AMO physics level diagrams with matplotlib.
 
-.. include:: Intro.rst
-
 .. toctree::
    :maxdepth: 2
    :hidden:
    :glob:
-   :caption: DETAILS
+   :caption: DOCUMENTATION
 
+   Intro
    detailed
    changelog
 
