@@ -8,6 +8,9 @@ def ket_str(s: Any) -> str:
     """
     Put a ket around the string in matplotlib.
 
+    Parameters:
+        s: Object to be converted to string and placed inside a ket.
+
     Returns:
         str: A string that will render as :math:`\\left|\\text{s}\\right\\rangle`
     """
@@ -22,6 +25,9 @@ def ket_str(s: Any) -> str:
 def bra_str(s: Any) -> str:
     """
     Put a bra around the string in matplotlib.
+
+    Parameters:
+        s: Object to be converted to a string and placed inside a bra.
 
     Returns:
         str: A string that will render as :math:`\\left\\langle\\text{s}\\right|`

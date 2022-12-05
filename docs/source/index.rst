@@ -10,7 +10,7 @@ A python library for generating AMO physics level diagrams with matplotlib.
    :maxdepth: 2
    :hidden:
    :glob:
-   :caption: GETTING STARTED
+   :caption: DETAILS
 
    detailed
    changelog
