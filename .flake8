@@ -13,6 +13,6 @@ exclude =
     __pycache__,
     docs,
 max-complexity = 10
-max-line-length = 100
-max-doc-length = 100
+max-line-length = 120
+max-doc-length = 120
 count = True
