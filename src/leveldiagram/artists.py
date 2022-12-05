@@ -129,8 +129,7 @@ class EnergyLevel(Line2D):
             anchor = self.get_right()
         else:
             if len(loc) == 2:
-                loc = np.array(loc)
-                anchor = self.get_center() - loc
+                anchor = self.get_center() - np.array(loc)
             else:
                 raise TypeError('loc must iterable of two elements if not using keys')
         
@@ -232,21 +231,18 @@ class Coupling(Line2D):
                 the arrowhead to avoid extra lines.
         """
 
-        if not np.iterable(start) or not np.iterable(stop):
+        if not isinstance(start, Sequence) or not isinstance(stop, Sequence):
             raise RuntimeError('x/y data must be a sequence of two elements')
         elif len(start) != 2 or len(stop) != 2:
             raise RuntimeError('x/y data must be a sequence of two elements')
-
-        start = np.array(start)
-        stop = np.array(stop)
 
         if arrow_kw is None:
             arrow_kw = {}
         if label_kw is None:
             label_kw = {}
 
-        self._start = start
-        self._stop = stop
+        self._start = np.array(start)
+        self._stop = np.array(stop)
         self._arrowsize = arrowsize
         self._arrowratio = arrowratio
         self._tail = tail
@@ -476,10 +472,6 @@ class WavyCoupling(Coupling):
                          label_rot, label_flip,
                          label_kw,
                          **kwargs)
-        if not np.iterable(start) or not np.iterable(stop):
-            raise RuntimeError('x/y data must be a sequence of two elements')
-        elif len(start) != 2 or len(stop) != 2:
-            raise RuntimeError('x/y data must be a sequence of two elements')
 
     def init_path(self) -> Tuple[np.ndarray, np.ndarray]:
         """
