@@ -31,30 +31,23 @@ class LD():
                  wavycoupling_defaults = None,
                  ):
         """
-        Parameters
-        ----------
-        graph: networkx.DiGraph or networkx.MultiDiGraph
-            Graph object that defines the system to diagram
-        ax: matplotlib.Axes, optional
-            Axes to add the diagram to. If None, creates a new figure and axes.
-            Default is None.
-        default_label: str, optional
-            Sets which text label direction to use for default labelling,
-            which is the node index inside a key.
-            Valid options are 'left_text', 'right_text', 'top_text', 'bottom_text'.
-            If 'none', no default labels are not generated.
-        level_defaults: dict, optional
-            `EnergyLevel` default values for whole diagram.
-            Provided values override class defaults.
-            If None, use class defaults.
-        coupling_defaults: dict, optional
-            `Coupling` default values for whole diagram.
-            Provided values override class defaults.
-            If None, use class defaults.
-        wavycoupling_defaults: dict, optional
-            `WavyCoupling` default values for whole diagram.
-            Provided values override class defaults.
-            If None, use class defaults.
+        Parameters:
+            graph (networkx.DiGraph): Graph object that defines the system to diagram
+            ax (matplotlib.Axes, optional): Axes to add the diagram to. If None, creates a new figure and axes.
+                Default is None.
+            default_label (str, optional): Sets which text label direction to use for default labelling,
+                which is the node index inside a key.
+                Valid options are 'left_text', 'right_text', 'top_text', 'bottom_text'.
+                If 'none', no default labels are not generated.
+            level_defaults (dict, optional): `EnergyLevel` default values for whole diagram.
+                Provided values override class defaults.
+                If None, use class defaults.
+            coupling_defaults (dict, optional): `Coupling` default values for whole diagram.
+                Provided values override class defaults.
+                If None, use class defaults.
+            wavycoupling_defaults (dict, optional): `WavyCoupling` default values for whole diagram.
+                Provided values override class defaults.
+                If None, use class defaults.
         """
 
         if ax is None:
