@@ -5,12 +5,19 @@ Base Level Diagram class
 import matplotlib.pyplot as plt
 from copy import deepcopy
 
+from typing import Dict, Tuple, Optional, Literal, Any
+from networkx import DiGraph
+from matplotlib.axes import Axes
+
 from .utils import deep_update, ket_str
 from .artists import EnergyLevel, Coupling, WavyCoupling
 
 class LD():
     """
-    Basic Level Diagram drawing class
+    Basic Level Diagram drawing class.
+
+    This class is used to draw a level diagram based on a provided Directional Graph.
+    The nodes of this graph define the energy levels, the edges define the couplings.
     """
 
     _level_defaults = {'width': 1, 'color':'k',
@@ -24,30 +31,52 @@ class LD():
     _wavycoupling_defaults = {'waveamp': 0.1, 'halfperiod': 0.1}
     "WavyCoupling default parameters dictionary"
     
-    def __init__(self, graph, ax = None,
-                 default_label = 'left_text',
-                 level_defaults = None,
-                 coupling_defaults = None,
-                 wavycoupling_defaults = None,
+    def __init__(self, graph: DiGraph, ax: Optional[Axes] = None,
+                 default_label: Literal['none', 'left_text', 'right_text',
+                                        'top_text', 'bottom_text'] = 'left_text',
+                 level_defaults: Optional[Dict[str, Any]] = None,
+                 coupling_defaults: Optional[Dict[str, Any]] = None,
+                 wavycoupling_defaults: Optional[Dict[str, Any]] = None,
                  ):
         """
         Parameters:
             graph (networkx.DiGraph): Graph object that defines the system to diagram
-            ax (matplotlib.Axes, optional): Axes to add the diagram to. If None, creates a new figure and axes.
+            ax (matplotlib.axes.Axes, optional): Axes to add the diagram to. If None, creates a new figure and axes.
                 Default is None.
             default_label (str, optional): Sets which text label direction to use for default labelling,
                 which is the node index inside a key.
-                Valid options are 'left_text', 'right_text', 'top_text', 'bottom_text'.
+                Valid options are `'left_text'`, `'right_text'`, `'top_text'`, `'bottom_text'`.
                 If 'none', no default labels are not generated.
-            level_defaults (dict, optional): `EnergyLevel` default values for whole diagram.
+            level_defaults (dict, optional): :class:`~.EnergyLevel` default values for whole diagram.
                 Provided values override class defaults.
                 If None, use class defaults.
-            coupling_defaults (dict, optional): `Coupling` default values for whole diagram.
+            coupling_defaults (dict, optional): :class:`~.Coupling` default values for whole diagram.
                 Provided values override class defaults.
                 If None, use class defaults.
-            wavycoupling_defaults (dict, optional): `WavyCoupling` default values for whole diagram.
+            wavycoupling_defaults (dict, optional): :class:`~.WavyCoupling` default values for whole diagram.
                 Provided values override class defaults.
                 If None, use class defaults.
+        
+        In keeping with the finest matplotlib traditions,
+        default options and behavior will produce a *reasonable* output from a graph.
+
+        Examples:
+            >>> nodes = (0,1,2)
+            >>> edges = ((0,1), (1,2))
+            >>> graph = nx.DiGraph()
+            >>> graph.add_nodes_from(nodes)
+            >>> graph.add_edges_from(edges)
+            >>> d = ld.LD(graph)
+            >>> d.draw()
+
+            .. image:: basic_example.png
+              :width: 400
+              :alt: Basic 3-level diagram with 2 couplings using all default settings
+
+        To get more refined diagrams, global options can be set by passing keyword argument
+        dictionaries to the constructor.
+        Options per level or coupling can be set by setting keyword arguments in the dictionaries
+        of the nodes and edges of the graph.
         """
 
         if ax is None:
@@ -80,14 +109,16 @@ class LD():
             self.wavycoupling_defaults = deep_update(self._wavycoupling_defaults, wavycoupling_defaults)
         
         # internal storage objects
-        self.levels = {}
-        self.couplings = {}
+        self.levels: Dict[int, EnergyLevel] = {}
+        """Stores levels to be drawn"""
+        self.couplings: Dict[Tuple[int,int], Coupling] = {}
+        """Stores couplings to be drawn"""
         
     def generate_levels(self):
         """
         Creates the EnergyLevel artists from the graph nodes.
         
-        They are saved to the `LD.levels` dictionary.
+        They are saved to the :attr:`levels` dictionary.
         """
         
         for n in self._graph.nodes:
@@ -107,7 +138,7 @@ class LD():
         """
         Creates the Coupling and WavyCoupling artisits from the graph edges.
         
-        They are saved to the `LD.couplings` dictionary.
+        They are saved to the :attr:`couplings` dictionary.
         """
         
         for ed in self._graph.edges:
@@ -138,7 +169,7 @@ class LD():
         """
         Add artists to the figure.
 
-        This calls `matplotlib.axes.Axes.autoscale_view` to ensure
+        This calls :meth:`matplotlib:matplotlib.axes.Axes.autoscale_view` to ensure
         plot ranges are increased to account for objects.
 
         It may be necessary to increase plot margins to handle

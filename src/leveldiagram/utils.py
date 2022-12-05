@@ -2,8 +2,9 @@
 Miscellaneous utility functions
 """
 
+from typing import Any
 
-def ket_str(s):
+def ket_str(s: Any) -> str:
     """
     Put a ket around the string in matplotlib.
 
@@ -18,7 +19,7 @@ def ket_str(s):
     return out_s
 
 
-def bra_str(s):
+def bra_str(s: Any) -> str:
     """
     Put a bra around the string in matplotlib.
 
@@ -33,11 +34,11 @@ def bra_str(s):
     return out_s
 
 
-def deep_update(mapping, *updating_mappings):
+def deep_update(mapping: dict, *updating_mappings: dict) -> dict:
     """
     Helper function to update nested dictionaries.
 
-    Lifted from pydantic
+    Lifted from `pydantic <https://github.com/pydantic/pydantic/blob/main/pydantic/_internal/_utils.py>`_
 
     Returns:
         dict: Deep-updated copy of `mapping`

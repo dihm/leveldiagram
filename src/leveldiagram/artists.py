@@ -7,6 +7,8 @@ from matplotlib.lines import Line2D
 import numpy as np
 import warnings
 
+from typing import Optional, Any, Union, Literal, Sequence, Dict, Tuple
+
 from .utils import deep_update
 
 affine = mpl.transforms.Affine2D
@@ -15,6 +17,10 @@ affine = mpl.transforms.Affine2D
 class EnergyLevel(Line2D):
     """
     Energy level artist.
+
+    This object also implements a number of potential Text artists for labelling.
+    It also includes helper methods for getting the exact coordinates of anchor points
+    for connected coupling arrows and the like.
     """
 
     def __str__(self):
@@ -23,10 +29,10 @@ class EnergyLevel(Line2D):
         else:
             return "EnergyLevel((%g,%g))" % (self._xpos, self._energy)
 
-    def __init__(self, energy, xpos, width,
-                 right_text='', left_text='',
-                 top_text='', bottom_text='',
-                 text_kw = None,
+    def __init__(self, energy: float, xpos: float, width: float,
+                 right_text: str = '', left_text: str = '',
+                 top_text: str = '', bottom_text: str = '',
+                 text_kw: Optional[Dict[str, Any]] = None,
                  **kwargs):
         """
         Parameters:
@@ -37,8 +43,9 @@ class EnergyLevel(Line2D):
             left_text (str, optional): Text to put to the left of the level
             top_text (str, optional): Text to put above the level
             bottom_text (str, optional): Text to put below the level
-            text_kw (dict, optional): Dictionary of keyword-arguments passed to matplotlib.text.Text
-            kwargs: Passed to the `matplotlib.lines.Line2D` constructor
+            text_kw (dict, optional): Dictionary of keyword-arguments passed to
+                :class:`matplotlib:matplotlib.text.Text`
+            kwargs: Passed to the :class:`matplotlib:matplotlib.lines.Line2D` constructor
         """
 
         self._energy = energy
@@ -48,7 +55,8 @@ class EnergyLevel(Line2D):
         if text_kw is None:
             text_kw = {}
         # we'll update the position when the line data is set
-        self.text_labels = {'right': mpl.text.Text(xpos + width/2,
+        self.text_labels: Dict[str, mpl.text.Text] = {
+                            'right': mpl.text.Text(xpos + width/2,
                                                    energy, right_text,
                                                    ha='left', va='center', **text_kw),
                             'left': mpl.text.Text(xpos - width/2,
@@ -60,13 +68,14 @@ class EnergyLevel(Line2D):
                             'bottom': mpl.text.Text(xpos,
                                                     energy, bottom_text,
                                                     ha='center', va='top', **text_kw)}
+        """Text label objects to add to the level"""
 
         x = (xpos - width/2, xpos + width/2)
         y = (energy, energy)
 
         super().__init__(x, y, **kwargs)
 
-    def get_center(self):
+    def get_center(self) -> np.ndarray:
         """
         Returns coordinates of the center of the level line.
 
@@ -76,7 +85,7 @@ class EnergyLevel(Line2D):
 
         return np.array((self._xpos, self._energy), dtype=float)
 
-    def get_left(self):
+    def get_left(self) -> np.ndarray:
         """
         Returns coordinates of the left of the level line.
 
@@ -86,7 +95,7 @@ class EnergyLevel(Line2D):
 
         return np.array((self._xpos - self._width/2, self._energy), dtype=float)
 
-    def get_right(self):
+    def get_right(self) -> np.ndarray:
         """
         Returns coordinates of the right of the level line.
 
@@ -96,7 +105,9 @@ class EnergyLevel(Line2D):
 
         return np.array((self._xpos + self._width/2, self._energy), dtype=float)
 
-    def get_anchor(self, loc='center'):
+    def get_anchor(self,
+                   loc: Union[Literal['center','left','right'], Sequence] = 'center'
+                   ) -> np.ndarray:
         """
         Returns an anchor on the level in plot coordinates.
 
@@ -131,7 +142,7 @@ class EnergyLevel(Line2D):
             label.set_figure(figure)
         super().set_figure(figure)
 
-    def set_axes(self, axes):
+    def set_axes(self, axes: mpl.axes.Axes):
         for side, label in self.text_labels.items():
             label.set_axes(axes)
         super().set_axes(axes)
@@ -164,33 +175,44 @@ class EnergyLevel(Line2D):
 class Coupling(Line2D):
     """
     Coupling artist for showing couplings between levels.
+
+    This artist is a conglomeration of artists.
+
+    - :class:`Line2D <matplotlib:matplotlib.lines.Line2D>` for the actual coupling path
+    - :class:`Polygon <matplotlib:matplotlib.patches.Polygon>` for the arrow heads
+    - :class:`Text <matplotlib:matplotlib.text.Text>` for the label
+
+    Sufficient methods are overridden from the base Line2D class to ensure
+    the other artists are rendered whenever the main artist is rendered.
     """
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self._start is None:
             return "Coupling()"
         else:
             return "Coupling((%g,%g)->(%g,%g))" % (*self._start, *self._stop)
 
-    def __init__(self, start, stop,
-                 arrowsize, arrowratio=1,
-                 tail=False,
-                 arrow_kw=None,
-                 label='', label_offset='center',
-                 label_rot=False, label_flip=False,
-                 label_kw=None,
+    def __init__(self, start: Sequence, stop: Sequence,
+                 arrowsize: float, arrowratio: float = 1,
+                 tail:bool = False,
+                 arrow_kw: Optional[Dict[str, Any]] = None,
+                 label: str = '',
+                 label_offset: Literal['center','left','right'] = 'center',
+                 label_rot: bool = False, label_flip: bool = False,
+                 label_kw: Optional[Dict[str, Any]] = None,
                  **kwargs
                  ):
         """
         Parameters:
-            start (2-element iterable): Coupling start location in data coordinates
-            stop (2-element iterable): Coupling end location in data coordinates
+            start (2-element sequence): Coupling start location in data coordinates
+            stop (2-element sequence): Coupling end location in data coordinates
             arrowsize (float): Size of arrowheads in x-data coordinates
             arrowratio (float, optional): Aspect ratio of the arrowhead.
                 Default is 1 for equal aspect ratio.
             tail (bool, optional): Whether to draw an identical arrowhead at the coupling base.
                 Default is False.
-            arrow_kw (dict, optional): Dictionary of keyword arguments to pass to `matplotlib.patches.Polygon` constructor.
+            arrow_kw (dict, optional): Dictionary of keyword arguments to pass to
+                :class:`matplotlib:matplotlib.patches.Polygon` constructor.
                 Note that keyword arguments provided to this function will clobber
                 identical keys provided here.
             label (str, optional): Label string to apply to the coupling.
@@ -202,9 +224,10 @@ class Coupling(Line2D):
                 Default is False, so label is oriented along x-axis always.
             label_flip (bool, optional): Apply a 180 degree rotation to the label.
                 Default is False.
-            label_kw (dict, optional): Dictionary of keyword arguments to pass to the `matplotlib.text.Text` constructor.
-            kwargs: Optional keyword arguments passed to the `matplotlib.lines.Line2D` constructor
-                and the `matplotlib.patches.Polygon` constructor for the arrowhead.
+            label_kw (dict, optional): Dictionary of keyword arguments to pass to the
+                :class:`matplotlib:matplotlib.text.Text` constructor.
+            kwargs: Optional keyword arguments passed to the :class:`matplotlib:matplotlib.lines.Line2D` constructor
+                and the :class:`matplotlib:matplotlib.patches.Polygon` constructor for the arrowhead.
                 Note that `'color'` will be automatically changed to `'facecolor'` for
                 the arrowhead to avoid extra lines.
         """
@@ -244,7 +267,23 @@ class Coupling(Line2D):
         # initialize label text
         self.init_label(label, label_offset, label_rot, label_flip, **label_kw)
 
-    def init_path(self):
+    def init_path(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Calculates the desired path for the line of the coupling.
+
+        The returned path is a line along the x-axis or the correct length.
+        Transforms are used to move and rotate this path to the end location.
+        This method of making the couplings is a little convoluted,
+        but it allows for simple definition of very general paths (line sine waves)
+        without distortions.
+
+        Returns
+        -------
+        x: numpy.ndarray
+            x-coordinates of the data points for the un-rotated, un-translated path 
+        y: numpy.ndarray
+            y-coordinates of the data points for the un-rotated, un-translated path (ie all zeros)
+        """
 
         vec = self._stop - self._start
         dist = np.sqrt(vec.dot(vec))
@@ -258,13 +297,32 @@ class Coupling(Line2D):
         return x0, y0
 
     def init_arrowheads(self, **kwargs):
+        """
+        Creates the arrowhead(s) for the coupling as matplotlib polygon objects.
+
+        Parameters:
+            kwargs: Optional keyword arguments to pass to the
+                :class:`matplotlib:matplotlib.patches.Polygon` constructor.
+        """
 
         verts = np.array([[-1,0.5],[-1,-0.5],[0,0],[-1,0.5]])
         self.head = mpl.patches.Polygon(verts, closed=False, **kwargs)
         if self._tail:
             self.tail = mpl.patches.Polygon(verts, closed=False, **kwargs)
 
-    def init_label(self, label, label_offset, label_rot, label_flip, **label_kw):
+    def init_label(self, label: str, label_offset: Literal['center', 'right', 'left'],
+                   label_rot: bool, label_flip: bool, **label_kw):
+        """
+        Creates the coupling label text object.
+
+        Parameters:
+            label (str): Label string to apply to the coupling.
+            label_offset (str): Offset direction for the label.
+                Options are `'center'`, `'left'`, and `'right'`.
+            label_rot (bool): Label will be justified along the coupling arrow axis if True.
+            label_flip (bool): Apply a 180 degree rotation to the label.
+            label_kw: Keyword arguments to pass to the :class:`matplotlib:matplotlib.text.Text` constructor.
+        """
 
         # define default softbackground for text
         bbox_defaults = {'boxstyle':'round,pad=0.05','fc':'w','ec':'none','alpha':0.5}
@@ -330,10 +388,6 @@ class Coupling(Line2D):
         line_transform = affine().rotate(self._ang).translate(*self._start)
         super().set_transform(line_transform + transform)
 
-    def set_data(self, x, y):
-
-        super().set_data(x, y)
-
     def draw(self, renderer):
 
         super().draw(renderer)
@@ -346,6 +400,9 @@ class Coupling(Line2D):
 class WavyCoupling(Coupling):
     """
     Coupling that uses a sine wave for the line.
+
+    This artists only differs from :class:`Coupling` in that the path 
+    uses a sine wave.
     """
 
     def __str__(self):
@@ -354,19 +411,21 @@ class WavyCoupling(Coupling):
         else:
             return "WavyCoupling((%g,%g)->(%g,%g))" % (*self._start, *self._stop)
 
-    def __init__(self, start, stop,
-                 waveamp, halfperiod, arrowsize, arrowratio=1,
-                 tail=False,
-                 arrow_kw=None,
-                 label='', label_offset='center',
-                 label_rot=False, label_flip=False,
-                 label_kw=None,
+    def __init__(self, start: Sequence, stop: Sequence,
+                 waveamp: float, halfperiod: float,
+                 arrowsize: float, arrowratio: float = 1,
+                 tail: bool = False,
+                 arrow_kw: Optional[Dict[str, Any]] = None,
+                 label: str = '',
+                 label_offset: Literal['center', 'right', 'left'] = 'center',
+                 label_rot: bool = False, label_flip: bool = False,
+                 label_kw: Optional[Dict[str, Any]] = None,
                  **kwargs
                  ):
         """
         Parameters:
-            start (2-element iterable): Coupling start location in data coordinates
-            stop (2-element iterable): Coupling end location in data coordinates
+            start (2-element sequence): Coupling start location in data coordinates
+            stop (2-element sequence): Coupling end location in data coordinates
             waveamp (float): Amplitude of the sine wave in y-coordiantes
             halfperiod (float): Length of a half-period of the sinewave in x-coordinates.
             arrowsize (float): Size of arrowheads in x-data coordinates
@@ -374,7 +433,8 @@ class WavyCoupling(Coupling):
                 Default is 1 for equal aspect ratio.
             tail (bool, optional): Whether to draw an identical arrowhead at the coupling base.
                 Default is False.
-            arrow_kw (dict, optional): Dictionary of keyword arguments to pass to `matplotlib.patches.Polygon` constructor.
+            arrow_kw (dict, optional): Dictionary of keyword arguments to pass to 
+                :class:`matplotlib:matplotlib.patches.Polygon` constructor.
                 Note that keyword arguments provided to this function will clobber
                 identical keys provided here.
             label (str, optional): Label string to apply to the coupling.
@@ -386,9 +446,10 @@ class WavyCoupling(Coupling):
                 Default is False, so label is oriented along x-axis always.
             label_flip (bool, optional): Apply a 180 degree rotation to the label.
                 Default is False.
-            label_kw (dict, optional): Dictionary of keyword arguments to pass to the `matplotlib.text.Text` constructor.
-            kwargs: Optional keyword arguments passed to the `matplotlib.lines.Line2D` constructor
-                and the `matplotlib.patches.Polygon` constructor for the arrowhead.
+            label_kw (dict, optional): Dictionary of keyword arguments to pass to the
+                :class:`matplotlib:matplotlib.text.Text` constructor.
+            kwargs: Optional keyword arguments passed to the :class:`matplotlib:matplotlib.lines.Line2D` constructor
+                and the :class:`matplotlib:matplotlib.patches.Polygon` constructor for the arrowhead.
                 Note that `'color'` will be automatically changed to `'facecolor'` for
                 the arrowhead to avoid extra lines.
 
@@ -420,7 +481,20 @@ class WavyCoupling(Coupling):
         elif len(start) != 2 or len(stop) != 2:
             raise RuntimeError('x/y data must be a sequence of two elements')
 
-    def init_path(self):
+    def init_path(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Calculates the desired path for the line of the coupling.
+
+        The returned path is a sine wave along the x-axis or the correct length.
+        Transforms are used to move and rotate this path to the end location.
+
+        Returns
+        -------
+        x: numpy.ndarray
+            x-coordinates of the data points for the un-rotated, un-translated path 
+        y: numpy.ndarray
+            y-coordinates of the data points for the un-rotated, un-translated path
+        """
 
         vec = self._stop - self._start
         dist = np.sqrt(vec.dot(vec))
