@@ -187,6 +187,10 @@ class LD:
 
         for lev in self.levels.values():
             self.ax.add_line(lev)
+            for _, text in lev.text_labels.items():
+                # registers text labels as artists on the axes
+                # ensures text doesn't get clipped by figure edges
+                self.ax._add_text(text)
 
         for coupling in self.couplings.values():
             self.ax.add_line(coupling)
