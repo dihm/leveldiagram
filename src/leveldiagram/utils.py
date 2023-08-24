@@ -2,6 +2,10 @@
 Miscellaneous utility functions
 """
 
+import leveldiagram
+import platform
+from importlib.metadata import version
+
 from typing import Any
 
 
@@ -62,3 +66,26 @@ def deep_update(mapping: dict, *updating_mappings: dict) -> dict:
             else:
                 updated_mapping[k] = v
     return updated_mapping
+
+
+def about():
+    """
+    Display version of leveldiagram and critical dependencies.
+    """
+
+    header = """
+        leveldiagram
+    ====================
+    """
+    print(header)
+    print(f'leveldiagram Version: {leveldiagram.__version__:s}')
+    dep_header = """
+        Dependencies
+    ====================
+    """
+    print(dep_header)
+    print(f'Python Version:       {platform.python_version():s}')
+    print(f'NumPy Version:        {version("numpy"):s}')
+    print(f'Matplotlib Version:   {version("matplotlib"):s}')
+    print(f'NetworkX Version:     {version("networkx"):s}')
+    
