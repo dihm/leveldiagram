@@ -20,10 +20,10 @@ class LD:
     The nodes of this graph define the energy levels, the edges define the couplings.
     """
 
-    _level_defaults = {"width": 1, "color": "k", "text_kw": {"fontsize": "x-large"}}
+    _level_defaults = {"width": 1, "color": "k", "text_kw": {"fontsize": "large"}}
     "EnergyLevel default parameters dictionary"
 
-    _coupling_defaults = {"arrowsize": 0.1, "label_kw": {"fontsize": "large"}}
+    _coupling_defaults = {"arrowsize": 0.15, "label_kw": {"fontsize": "large"}}
     "Coupling default parameters dictionary"
 
     _wavycoupling_defaults = {"waveamp": 0.1, "halfperiod": 0.1}

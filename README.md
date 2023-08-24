@@ -6,7 +6,7 @@ The level structure is defined using networkx graphs.
 ## Quick Usage
 
 This package takes networkx directional graphs,
-which can be used effectively define a system hamiltonian,
+which can be used to effectively define a system hamiltonian,
 and creates an energy diagram representing the system.
 The nodes of the graph represent the energy levels.
 The edges of the graph represent the couplings between levels.
