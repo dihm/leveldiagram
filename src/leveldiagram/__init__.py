@@ -3,4 +3,4 @@
 from .utils import ket_str, bra_str, about
 from .ld import LD
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
