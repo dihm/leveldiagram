@@ -137,7 +137,7 @@ class EnergyLevel(Line2D):
             anchor = self.get_right()
         else:
             if len(loc) == 2:
-                anchor = self.get_center() - np.array(loc)
+                anchor = self.get_center() + np.array(loc)
             else:
                 raise TypeError("loc must iterable of two elements if not using keys")
 
