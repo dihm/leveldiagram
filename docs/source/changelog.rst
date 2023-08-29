@@ -1,23 +1,50 @@
 Changelog
 =========
 
-Latest
+v0.2.0
 ------
 
 Improvements
 ++++++++++++
 
-- stuff
+- All coupling types are now available in :class:`Coupling`
+- Added option for circular coupling paths, set by a deflection parameter
+- Added many options to :class:`LD` for working with graphs from other projects
+  
+  - Can now specify all leveldiagram control parameters under a single key `ld_kw`.
+    This helps avoid key naming conflicts between projects.
+  - Wavy and deflected couplings are enabled via `'wavy'` and `'deflect'` boolean control parameters
+  - Individual couplings can be ignored by setting `'hidden'` to `True`
+  - Start and stop anchors can be specified independently for couplings
 
 Bug Fixes
 +++++++++
 
-- other stuff
+- Fixed definition when using custom anchor positions
 
 Deprecations
 ++++++++++++
 
-- other other stuff
+- `WavyCoupling` is no longer used. Use :class:`Coupling` with `waveamp` and `halfperiod` parameters defined.
+
+
+v0.1.1
+------
+
+Improvements
+++++++++++++
+
+- Add and about function for easy tracking of imrprovements in example notebooks
+
+Bug Fixes
++++++++++
+
+- Fixed issue where level labels near the axes edge would get clipped
+
+Deprecations
+++++++++++++
+
+- Updated some default plotting values
 
 v0.1.0
 ------
