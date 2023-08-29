@@ -9,7 +9,7 @@ from networkx import DiGraph
 from matplotlib.axes import Axes
 
 from .utils import deep_update, ket_str
-from .artists import EnergyLevel, Coupling, WavyCoupling
+from .artists import EnergyLevel, Coupling
 
 
 class LD:
@@ -26,8 +26,11 @@ class LD:
     _coupling_defaults = {"arrowsize": 0.15, "label_kw": {"fontsize": "large"}}
     "Coupling default parameters dictionary"
 
-    _wavycoupling_defaults = {"waveamp": 0.1, "halfperiod": 0.1}
-    "WavyCoupling default parameters dictionary"
+    _wavy_defaults = {"waveamp": 0.05, "halfperiod": 0.1}
+    "Default parameters for a wavy coupling"
+
+    _deflection_defaults = {"deflection": 0.25}
+    "Default parameters for a deflection"
 
     def __init__(
         self,
@@ -38,24 +41,36 @@ class LD:
         ] = "left_text",
         level_defaults: Optional[Dict[str, Any]] = None,
         coupling_defaults: Optional[Dict[str, Any]] = None,
-        wavycoupling_defaults: Optional[Dict[str, Any]] = None,
+        wavy_defaults: Optional[Dict[str, Any]] = None,
+        deflection_defaults: Optional[Dict[str, Any]] = None,
+        use_ld_kw: bool = False,
     ):
         """
         Parameters:
             graph (networkx.DiGraph): Graph object that defines the system to diagram
-            ax (matplotlib.axes.Axes, optional): Axes to add the diagram to. If None, creates a new figure and axes.
+            ax (matplotlib.axes.Axes, optional): Axes to add the diagram to.
+                If None, creates a new figure and axes.
                 Default is None.
-            default_label (str, optional): Sets which text label direction to use for default labelling,
+            default_label (str, optional):
+                Sets which text label direction to use for default labelling,
                 which is the node index inside a key.
-                Valid options are `'left_text'`, `'right_text'`, `'top_text'`, `'bottom_text'`.
+                Valid options are `'left_text'`, `'right_text'`,
+                `'top_text'`, `'bottom_text'`.
                 If 'none', no default labels are not generated.
-            level_defaults (dict, optional): :class:`~.EnergyLevel` default values for whole diagram.
+            level_defaults (dict, optional):
+                :class:`~.EnergyLevel` default values for whole diagram.
                 Provided values override class defaults.
                 If None, use class defaults.
-            coupling_defaults (dict, optional): :class:`~.Coupling` default values for whole diagram.
+            coupling_defaults (dict, optional): :class:`~.Coupling` default values
+                for whole diagram.
                 Provided values override class defaults.
                 If None, use class defaults.
-            wavycoupling_defaults (dict, optional): :class:`~.WavyCoupling` default values for whole diagram.
+            wavy_defaults (dict, optional):
+                Wavy specific :class:`~.Coupling` default values for whole diagram.
+                Provided values override class defaults.
+                If None, use class defaults.
+            deflection_defaults (dict, optional):
+                Deflection specific :class:`~.Coupling` default values for whole diagram.
                 Provided values override class defaults.
                 If None, use class defaults.
 
@@ -75,10 +90,11 @@ class LD:
               :width: 400
               :alt: Basic 3-level diagram with 2 couplings using all default settings
 
-        To get more refined diagrams, global options can be set by passing keyword argument
+        To get more refined diagrams,
+        global options can be set by passing keyword argument
         dictionaries to the constructor.
-        Options per level or coupling can be set by setting keyword arguments in the dictionaries
-        of the nodes and edges of the graph.
+        Options per level or coupling can be set by setting keyword arguments
+        in the dictionaries of the nodes and edges of the graph.
         """
 
         if ax is None:
@@ -93,6 +109,7 @@ class LD:
 
         # control parameters
         self.default_label = default_label
+        self.use_ld_kw = use_ld_kw
 
         # save default options for artists
         if level_defaults is None:
@@ -107,11 +124,18 @@ class LD:
                 self._coupling_defaults, coupling_defaults
             )
 
-        if wavycoupling_defaults is None:
-            self.wavycoupling_defaults = self._wavycoupling_defaults
+        if wavy_defaults is None:
+            self.wavy_defaults = self._wavy_defaults
         else:
-            self.wavycoupling_defaults = deep_update(
-                self._wavycoupling_defaults, wavycoupling_defaults
+            self.wavy_defaults = deep_update(
+                self._wavy_defaults, wavy_defaults
+            )
+
+        if deflection_defaults is None:
+            self.deflection_defaults = self._deflection_defaults
+        else:
+            self.deflection_defaults = deep_update(
+                self._deflection_defaults, deflection_defaults
             )
 
         # internal storage objects
@@ -128,7 +152,10 @@ class LD:
         """
 
         for n in self._graph.nodes:
-            node = self._graph.nodes[n].copy()
+            if self.use_ld_kw:
+                node = self._graph.nodes[n].get('ld_kw', {}).copy()
+            else:
+                node = self._graph.nodes[n].copy()
             # if x,y coords not defined, set using node index
             node.setdefault("energy", n)
             node.setdefault("xpos", n)
@@ -148,15 +175,22 @@ class LD:
         """
 
         for ed in self._graph.edges:
-            edge = self._graph.edges[ed].copy()
+            if self.use_ld_kw:
+                edge = self._graph.edges[ed].get("ld_kw", {}).copy()
+            else:
+                edge = self._graph.edges[ed].copy()
+            # skip if hidden
+            if edge.pop("hidden", False):
+                continue
             # set default options
             edge = deep_update(self.coupling_defaults, edge)
             # pop off non-arguments
             det = edge.pop("detuning", 0)
-            anchor = edge.pop("anchor", "center")
+            start_anchor = edge.pop("start_anchor", "center")
+            stop_anchor = edge.pop("stop_anchor", "center")
             # set where couplings join the levels
-            start = self.levels[ed[0]].get_anchor(anchor)
-            stop = self.levels[ed[1]].get_anchor(anchor)
+            start = self.levels[ed[0]].get_anchor(start_anchor)
+            stop = self.levels[ed[1]].get_anchor(stop_anchor)
             # adjust for detuning
             stop[1] -= det
             edge.setdefault("start", start)
@@ -165,11 +199,14 @@ class LD:
             if "color" not in edge:
                 edge["color"] = self.ax._get_lines.get_next_color()
 
-            if edge.pop("wavy", False):
-                edge.update(self.wavycoupling_defaults)
-                self.couplings[ed] = WavyCoupling(**edge)
-            else:
-                self.couplings[ed] = Coupling(**edge)
+            wavy = edge.pop("wavy", False)
+            deflect = edge.pop("deflect", False)
+            if wavy:
+                edge = deep_update(self.wavy_defaults, edge)
+            if deflect:
+                edge = deep_update(self.deflection_defaults, edge)
+                
+            self.couplings[ed] = Coupling(**edge)
 
     def draw(self):
         """
