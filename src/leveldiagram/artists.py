@@ -205,6 +205,9 @@ class Coupling(Line2D):
         start: Collection,
         stop: Collection,
         arrowsize: float,
+        deflection: float = 0.0,
+        waveamp: float = 0.0,
+        halfperiod: float = 0,
         arrowratio: float = 1,
         tail: bool = False,
         arrow_kw: Optional[Dict[str, Any]] = None,
@@ -220,6 +223,14 @@ class Coupling(Line2D):
             start (2-element collection): Coupling start location in data coordinates
             stop (2-element collection): Coupling end location in data coordinates
             arrowsize (float): Size of arrowheads in x-data coordinates
+            deflection (float, optional): Amount to bend the center of the coupling arrow away from linear.
+                Defined in y-coordintes. Default is 0 or no deflection.
+            waveamp (float, optional): Amplitude of sine wave modulation of the coupling arrow.
+                Defined in y-coordinates. Default is 0 or no waviness.
+            halfperiod (float, optional): Length of half-period of sine modulation.
+                Defined in x-coordinates.
+                Both `waveamp` and `period` must be non-zero to get modulation.
+                Default is 0 or no waviness.
             arrowratio (float, optional): Aspect ratio of the arrowhead.
                 Default is 1 for equal aspect ratio.
             tail (bool, optional): Whether to draw an identical arrowhead at the coupling base.
@@ -262,6 +273,20 @@ class Coupling(Line2D):
         self._tail = tail
         self.tail = False
 
+        self._deflection = deflection
+        self._deflect = not np.isclose(deflection, 0.0)
+
+        self._waveamp = waveamp
+        self._halfperiod = halfperiod
+
+        # set number of points to use when drawing lines
+        self.npts = 100
+
+        if arrowsize * arrowratio < waveamp:
+            warnings.warn(
+                "Wave amplitude is larger than arrowhead; result will look funny."
+            )
+
         x0, y0 = self.init_path()
         super().__init__(x0, y0, **kwargs)
 
@@ -281,7 +306,7 @@ class Coupling(Line2D):
         """
         Calculates the desired path for the line of the coupling.
 
-        The returned path is a line along the x-axis or the correct length.
+        The returned path is a line relative to the x-axis of the correct length.
         Transforms are used to move and rotate this path to the end location.
         This method of making the couplings is a little convoluted,
         but it allows for simple definition of very general paths (line sine waves)
@@ -292,19 +317,68 @@ class Coupling(Line2D):
         x: numpy.ndarray
             x-coordinates of the data points for the un-rotated, un-translated path
         y: numpy.ndarray
-            y-coordinates of the data points for the un-rotated, un-translated path (ie all zeros)
+            y-coordinates of the data points for the un-rotated, un-translated path
         """
 
         vec = self._stop - self._start
         dist = np.sqrt(vec.dot(vec))
         self._dist = dist
         self._ang = np.arctan2(*vec[::-1])
-        if self._tail:
-            x0, y0 = np.stack(((self._arrowsize, 0), (dist - self._arrowsize, 0))).T
-        else:
-            x0, y0 = np.stack(((0, 0), (dist - self._arrowsize, 0))).T
 
-        return x0, y0
+        h = self._deflection
+
+        # convert half-periods
+        try:
+            omega = np.pi / self._halfperiod
+        except ZeroDivisionError:
+            omega = 0.0
+        
+        if self._deflect:
+
+            if h > dist/2:
+                warnings.warn("Maximum deflection exceded "
+                              "(deflection > half vector length). "
+                              "Behavior poorly defined.")
+        
+            r = (dist**2+4*h**2)/(8*h)
+            theta_center = 2*np.arcsin(dist/2/r)
+            # accounts for shortened path from arrowheads
+            theta_shim = 2*np.arcsin(self._arrowsize/2/r)
+            phi = theta_center/2
+            self._phi = phi
+            # accounts for shortened path when rotating arrowheads
+            self._phi_shim = phi - theta_shim/2
+
+            if self._tail:
+                thetas = np.linspace(theta_shim, theta_center-theta_shim, self.npts)
+                theta0 = theta_center-theta_shim*2
+            else:
+                thetas = np.linspace(0, theta_center - theta_shim, self.npts)
+                theta0 = theta_center-theta_shim
+
+            xc = ((r+self._waveamp*
+                   np.sin(omega*r*theta_center*thetas/theta0))
+                  * np.sin(thetas-phi)
+                  + r*np.sin(phi))
+            yc = ((r+self._waveamp*
+                  np.sin(omega*r*theta_center*thetas/theta0))
+                  * np.cos(thetas-phi)
+                  - r*np.cos(phi))
+        
+            return xc, yc
+        
+        else:
+            
+            if self._tail:
+                x0 = np.linspace(self._arrowsize, dist - self._arrowsize, self.npts)
+                op0 = omega * self._arrowsize*2
+            else:
+                x0 = np.linspace(0, dist - self._arrowsize, self.npts)
+                op0 = omega * self._arrowsize
+                
+            y0 = self._waveamp * np.sin(omega*x0 + op0)
+                
+            return x0, y0
 
     def init_arrowheads(self, **kwargs):
         """
@@ -315,10 +389,29 @@ class Coupling(Line2D):
                 :class:`matplotlib:matplotlib.patches.Polygon` constructor.
         """
 
-        verts = np.array([[-1, 0.5], [-1, -0.5], [0, 0], [-1, 0.5]])
-        self.head = mpl.patches.Polygon(verts, closed=False, **kwargs)
-        if self._tail:
-            self.tail = mpl.patches.Polygon(verts, closed=False, **kwargs)
+        verts0 = np.array([[-1, 0.5], [-1, -0.5], [0, 0], [-1, 0.5]])
+        # set aspect ratio of arrow
+        verts0[:,1] *= self._arrowratio
+        
+        if self._deflect:
+            verts_head = verts0 @ self._rotation_matrix(self._phi_shim)
+            self.head = mpl.patches.Polygon(verts_head, closed=False, **kwargs)
+            if self._tail:
+                verts_tail = verts0 @ self._rotation_matrix(-self._phi_shim)
+                self.tail = mpl.patches.Polygon(verts_tail, closed=False, **kwargs)
+                
+        else:
+            self.head = mpl.patches.Polygon(verts0, closed=False, **kwargs)
+            
+            if self._tail:
+                self.tail = mpl.patches.Polygon(verts0, closed=False, **kwargs)
+
+    def _rotation_matrix(self, theta):
+        
+        rot= np.array([[np.cos(theta), -np.sin(theta)],
+                       [np.sin(theta), np.cos(theta)]])
+        
+        return rot
 
     def init_label(
         self,
@@ -360,7 +453,7 @@ class Coupling(Line2D):
             label_ha = "right"
         self.text = mpl.text.Text(
             self._dist / 2,
-            0,
+            self._deflection,
             label,
             ha=label_ha,
             va="center",
@@ -399,7 +492,7 @@ class Coupling(Line2D):
 
         head_transform = (
             affine()
-            .scale(self._arrowsize, self._arrowsize * self._arrowratio)
+            .scale(self._arrowsize, self._arrowsize)
             .rotate(self._ang)
             .translate(*self._stop)
         )
@@ -408,7 +501,7 @@ class Coupling(Line2D):
         if self.tail:
             tail_transform = (
                 affine()
-                .scale(self._arrowsize, self._arrowsize * self._arrowratio)
+                .scale(self._arrowsize, self._arrowsize)
                 .rotate(self._ang + np.pi)
                 .translate(*self._start)
             )
@@ -431,128 +524,3 @@ class Coupling(Line2D):
         if self.tail:
             self.tail.draw(renderer)
         self.text.draw(renderer)
-
-
-class WavyCoupling(Coupling):
-    """
-    Coupling that uses a sine wave for the line.
-
-    This artists only differs from :class:`Coupling` in that the path
-    uses a sine wave.
-    """
-
-    def __str__(self):
-        if self._start is None:
-            return "WavyCoupling()"
-        else:
-            return "WavyCoupling((%g,%g)->(%g,%g))" % (*self._start, *self._stop)
-
-    def __init__(
-        self,
-        start: Collection,
-        stop: Collection,
-        waveamp: float,
-        halfperiod: float,
-        arrowsize: float,
-        arrowratio: float = 1,
-        tail: bool = False,
-        arrow_kw: Optional[Dict[str, Any]] = None,
-        label: str = "",
-        label_offset: Literal["center", "right", "left"] = "center",
-        label_rot: bool = False,
-        label_flip: bool = False,
-        label_kw: Optional[Dict[str, Any]] = None,
-        **kwargs
-    ):
-        """
-        Parameters:
-            start (2-element collection): Coupling start location in data coordinates
-            stop (2-element collection): Coupling end location in data coordinates
-            waveamp (float): Amplitude of the sine wave in y-coordiantes
-            halfperiod (float): Length of a half-period of the sinewave in x-coordinates.
-            arrowsize (float): Size of arrowheads in x-data coordinates
-            arrowratio (float, optional): Aspect ratio of the arrowhead.
-                Default is 1 for equal aspect ratio.
-            tail (bool, optional): Whether to draw an identical arrowhead at the coupling base.
-                Default is False.
-            arrow_kw (dict, optional): Dictionary of keyword arguments to pass to
-                :class:`matplotlib:matplotlib.patches.Polygon` constructor.
-                Note that keyword arguments provided to this function will clobber
-                identical keys provided here.
-            label (str, optional): Label string to apply to the coupling.
-                Default is no label.
-            label_offset (str, optional): Offset direction for the label.
-                Options are `'center'`, `'left'`, and `'right'`.
-                Default is center of the coupling line.
-            label_rot (bool, optional): Label will be justified along the coupling arrow axis if True.
-                Default is False, so label is oriented along x-axis always.
-            label_flip (bool, optional): Apply a 180 degree rotation to the label.
-                Default is False.
-            label_kw (dict, optional): Dictionary of keyword arguments to pass to the
-                :class:`matplotlib:matplotlib.text.Text` constructor.
-            kwargs: Optional keyword arguments passed to the :class:`matplotlib:matplotlib.lines.Line2D` constructor
-                and the :class:`matplotlib:matplotlib.patches.Polygon` constructor for the arrowhead.
-                Note that `'color'` will be automatically changed to `'facecolor'` for
-                the arrowhead to avoid extra lines.
-
-        Warns:
-            UserWarning: If wave amplitude is larger and arrowhead.
-        """
-
-        self._waveamp = waveamp
-        self._halfperiod = halfperiod
-
-        if arrow_kw is None:
-            arrow_kw = {}
-        if label_kw is None:
-            label_kw = {}
-
-        if arrowsize * arrowratio < waveamp:
-            warnings.warn(
-                "Wave amplitude is larger than arrowhead; result will look funny."
-            )
-
-        super().__init__(
-            start,
-            stop,
-            arrowsize,
-            arrowratio,
-            tail,
-            arrow_kw,
-            label,
-            label_offset,
-            label_rot,
-            label_flip,
-            label_kw,
-            **kwargs
-        )
-
-    def init_path(self) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Calculates the desired path for the line of the coupling.
-
-        The returned path is a sine wave along the x-axis or the correct length.
-        Transforms are used to move and rotate this path to the end location.
-
-        Returns
-        -------
-        x: numpy.ndarray
-            x-coordinates of the data points for the un-rotated, un-translated path
-        y: numpy.ndarray
-            y-coordinates of the data points for the un-rotated, un-translated path
-        """
-
-        vec = self._stop - self._start
-        dist = np.sqrt(vec.dot(vec))
-        self._dist = dist
-        self._ang = np.arctan2(*vec[::-1])
-
-        omega = np.pi / self._halfperiod
-
-        amp = self._waveamp / 2
-        phi = omega * self._arrowsize
-        npoints = 151
-        x0 = np.linspace(0, dist - self._arrowsize, npoints)
-        y0 = amp * np.sin(omega * x0 + phi)
-
-        return x0, y0
