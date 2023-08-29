@@ -18,6 +18,31 @@ class LD:
 
     This class is used to draw a level diagram based on a provided Directional Graph.
     The nodes of this graph define the energy levels, the edges define the couplings.
+
+    Note
+    ----
+
+    In keeping with the finest matplotlib traditions,
+    default options and behavior will produce a *reasonable* output from a graph.
+    To get more refined diagrams,
+    global options can be set by passing keyword argument
+    dictionaries to the constructor.
+    Options per level or coupling can be set by setting keyword arguments
+    in the dictionaries of the nodes and edges of the graph.
+
+    Examples
+    --------
+    >>> nodes = (0,1,2)
+    >>> edges = ((0,1), (1,2))
+    >>> graph = nx.DiGraph()
+    >>> graph.add_nodes_from(nodes)
+    >>> graph.add_edges_from(edges)
+    >>> d = ld.LD(graph)
+    >>> d.draw()
+
+    .. image:: basic_example.png
+        :width: 400
+        :alt: Basic 3-level diagram with 2 couplings using all default settings
     """
 
     _level_defaults = {"width": 1, "color": "k", "text_kw": {"fontsize": "large"}}
@@ -46,55 +71,58 @@ class LD:
         use_ld_kw: bool = False,
     ):
         """
-        Parameters:
-            graph (networkx.DiGraph): Graph object that defines the system to diagram
-            ax (matplotlib.axes.Axes, optional): Axes to add the diagram to.
-                If None, creates a new figure and axes.
-                Default is None.
-            default_label (str, optional):
-                Sets which text label direction to use for default labelling,
-                which is the node index inside a key.
-                Valid options are `'left_text'`, `'right_text'`,
-                `'top_text'`, `'bottom_text'`.
-                If 'none', no default labels are not generated.
-            level_defaults (dict, optional):
-                :class:`~.EnergyLevel` default values for whole diagram.
-                Provided values override class defaults.
-                If None, use class defaults.
-            coupling_defaults (dict, optional): :class:`~.Coupling` default values
-                for whole diagram.
-                Provided values override class defaults.
-                If None, use class defaults.
-            wavy_defaults (dict, optional):
-                Wavy specific :class:`~.Coupling` default values for whole diagram.
-                Provided values override class defaults.
-                If None, use class defaults.
-            deflection_defaults (dict, optional):
-                Deflection specific :class:`~.Coupling` default values for whole diagram.
-                Provided values override class defaults.
-                If None, use class defaults.
+        Parameters
+        ----------
+        graph: networkx.DiGraph
+            Graph object that defines the system to diagram
 
-        In keeping with the finest matplotlib traditions,
-        default options and behavior will produce a *reasonable* output from a graph.
+            Beyond the arguments provided to the :class:`Coupling` artist primitive,
+            each coupling plotted by :class:`LD` can also take the following parameters
+            (which are defined as edge attributes on the graph).
 
-        Examples:
-            >>> nodes = (0,1,2)
-            >>> edges = ((0,1), (1,2))
-            >>> graph = nx.DiGraph()
-            >>> graph.add_nodes_from(nodes)
-            >>> graph.add_edges_from(edges)
-            >>> d = ld.LD(graph)
-            >>> d.draw()
+            - **hidden**: bool -
+              Tells :class:`LD` to ignore this coupling
+            - **start_anchor**: str or 2-element tuple -
+              Controls the start anchor point
+            - **stop_anchor**: str or 2-element tuple -
+              Controls the stop anchor point
+            - **detuning**: float -
+              How much to detune the coupling from the transition by.
+              Defined in x-coordinate units.
+            - **wavy**: bool -
+              Make coupling arrow a sine wave.
+              Uses default options if wavy specific options not provided.
+            - **deflect**: bool -
+              Make coupling a deflected, circular coupling.
+              Uses default options if deflect specific options not provided.
 
-            .. image:: basic_example.png
-              :width: 400
-              :alt: Basic 3-level diagram with 2 couplings using all default settings
-
-        To get more refined diagrams,
-        global options can be set by passing keyword argument
-        dictionaries to the constructor.
-        Options per level or coupling can be set by setting keyword arguments
-        in the dictionaries of the nodes and edges of the graph.
+        ax: matplotlib.axes.Axes, optional
+            Axes to add the diagram to.
+            If None, creates a new figure and axes.
+            Default is None.
+        default_label: str, optional
+            Sets which text label direction to use for default labelling,
+            which is the node index inside a key.
+            Valid options are `'left_text'`, `'right_text'`,
+            `'top_text'`, `'bottom_text'`.
+            If 'none', no default labels are not generated.
+        level_defaults: dict, optional
+            :class:`~.EnergyLevel` default values for whole diagram.
+            Provided values override class defaults.
+            If None, use class defaults.
+        coupling_defaults: dict, optional
+            :class:`~.Coupling` default values
+            for whole diagram.
+            Provided values override class defaults.
+            If None, use class defaults.
+        wavy_defaults: dict, optional
+            Wavy specific :class:`~.Coupling` default values for whole diagram.
+            Provided values override class defaults.
+            If None, use class defaults.
+        deflection_defaults: dict, optional
+            Deflection specific :class:`~.Coupling` default values for whole diagram.
+            Provided values override class defaults.
+            If None, use class defaults.
         """
 
         if ax is None:
