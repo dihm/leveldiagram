@@ -168,7 +168,7 @@ def run_nbconvert(_):
     examples_path = os.path.join(os.path.abspath(rel_path),'examples')
 
     out_base_path = os.path.join(os.path.dirname(Path(__file__)),'_examples')
-    intro_out_base_path = os.path.dirname(Path(__file__))
+    intro_out_base_path = os.path.join(os.path.dirname(Path(__file__)), '_intro')
 
     examples = Path(examples_path).glob('*.ipynb')
     intro_nbs = ['Intro']
