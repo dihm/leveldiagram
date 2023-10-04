@@ -1,5 +1,10 @@
 <img src="https://raw.githubusercontent.com/dihm/leveldiagram/main/docs/source/img/LevelDiagramLogo300.png" alt="leveldiagram" style="max-width: 100%;">
 
+[![PyPI](https://img.shields.io/pypi/v/leveldiagram.svg)](https://pypi.org/project/leveldiagram)
+[![Python Version](https://img.shields.io/pypi/pyversions/leveldiagram.svg)](https://python.org)
+[![License](https://img.shields.io/pypi/l/leveldiagram.svg)](https://github.com/dihm/leveldiagram/raw/main/LICENSE.md)
+[![Docs](https://readthedocs.org/projects/leveldiagram/badge/?version=latest)](https://leveldiagram.readthedocs.io/en/latest)
+
 # leveldiagram
 
 This module creates energy level diagrams common to atomic physics as matplotlib graphics.
