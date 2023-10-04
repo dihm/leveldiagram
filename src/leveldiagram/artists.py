@@ -195,10 +195,8 @@ class Coupling(Line2D):
     """
 
     def __str__(self) -> str:
-        if self._start is None:
-            return "Coupling()"
-        else:
-            return "Coupling((%g,%g)->(%g,%g))" % (*self._start, *self._stop)
+
+        return "Coupling((%g,%g)->(%g,%g))" % (*self._start, *self._stop)
 
     def __init__(
         self,
