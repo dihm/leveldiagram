@@ -11,6 +11,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import shutil
 import importlib.metadata
 from pathlib import Path
 import nbconvert
@@ -23,6 +24,11 @@ author = "David Meyer"
 release = importlib.metadata.version('leveldiagram')
 
 version = release
+
+# HTML icons
+img_path = 'img'
+html_logo = img_path + '/LevelDiagramIcon.svg'
+html_favicon = img_path + '/LevelDiagramIcon.ico'
 
 # -- General configuration (should be identical across all projects) ------------------
 
@@ -101,7 +107,8 @@ html_show_copyright = False
 html_static_path = []
 
 # Customize the html_theme
-html_theme_options = {'navigation_depth': 3}
+html_theme_options = {'navigation_depth': 3,
+                      'style_nav_header_background':'#607796'}
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -132,7 +139,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-#latex_logo = None
+latex_logo = img_path + '/LevelDiagramLogo300.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -162,8 +169,10 @@ def run_nbconvert(_):
 
     if os.environ.get('READTHEDOCS'):
         rel_path = '../..'
+        imgs_path = os.path.abspath('./img')
     else:
         rel_path = '..'
+        imgs_path = os.path.abspath('./source/img')
 
     examples_path = os.path.join(os.path.abspath(rel_path),'examples')
 
@@ -172,6 +181,7 @@ def run_nbconvert(_):
 
     examples = Path(examples_path).glob('*.ipynb')
     intro_nbs = ['Intro']
+    img_assets = ['LevelDiagramLogo150.png']
 
     rst_exporter = nbconvert.exporters.RSTExporter()
     writer = nbconvert.writers.FilesWriter()
@@ -185,3 +195,6 @@ def run_nbconvert(_):
         writer.build_directory = out_path
         (body, resources) = rst_exporter.from_filename(ex)
         writer.write(body,resources,name)
+        # copy image assets to every directory
+        for img in img_assets:
+            shutil.copy(os.path.join(imgs_path,img), out_path)

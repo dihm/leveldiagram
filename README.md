@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/dihm/leveldiagram/main/docs/source/img/LevelDiagramLogo300.png" alt="leveldiagram" style="max-width: 100%;">
+
 # leveldiagram
 
 This module creates energy level diagrams common to atomic physics as matplotlib graphics.
