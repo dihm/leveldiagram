@@ -223,7 +223,8 @@ class Coupling(Line2D):
             start (2-element collection): Coupling start location in data coordinates
             stop (2-element collection): Coupling end location in data coordinates
             arrowsize (float): Size of arrowheads in x-data coordinates
-            deflection (float, optional): Amount to bend the center of the coupling arrow away from linear.
+            deflection (float, optional): Amount to bend the center of the coupling arrow
+                away from linear.
                 Defined in y-coordintes. Default is 0 or no deflection.
             waveamp (float, optional): Amplitude of sine wave modulation of the coupling arrow.
                 Defined in y-coordinates. Default is 0 or no waviness.
@@ -244,14 +245,15 @@ class Coupling(Line2D):
             label_offset (str, optional): Offset direction for the label.
                 Options are `'center'`, `'left'`, and `'right'`.
                 Default is center of the coupling line.
-            label_rot (bool, optional): Label will be justified along the coupling arrow axis if True.
+            label_rot (bool, optional): Label is justified along the coupling arrow axis if True.
                 Default is False, so label is oriented along x-axis always.
             label_flip (bool, optional): Apply a 180 degree rotation to the label.
                 Default is False.
             label_kw (dict, optional): Dictionary of keyword arguments to pass to the
                 :class:`matplotlib:matplotlib.text.Text` constructor.
-            kwargs: Optional keyword arguments passed to the :class:`matplotlib:matplotlib.lines.Line2D` constructor
-                and the :class:`matplotlib:matplotlib.patches.Polygon` constructor for the arrowhead.
+            kwargs: Optional keyword arguments passed to the
+                :class:`matplotlib:matplotlib.lines.Line2D` constructor and the
+                :class:`matplotlib:matplotlib.patches.Polygon` constructor for the arrowhead.
                 Note that `'color'` will be automatically changed to `'facecolor'` for
                 the arrowhead to avoid extra lines.
         """
@@ -430,7 +432,8 @@ class Coupling(Line2D):
                 Options are `'center'`, `'left'`, and `'right'`.
             label_rot (bool): Label will be justified along the coupling arrow axis if True.
             label_flip (bool): Apply a 180 degree rotation to the label.
-            label_kw: Keyword arguments to pass to the :class:`matplotlib:matplotlib.text.Text` constructor.
+            label_kw: Keyword arguments to pass to the
+                :class:`matplotlib:matplotlib.text.Text` constructor.
         """
 
         # define default softbackground for text
