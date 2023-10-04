@@ -40,7 +40,7 @@ class LD:
     >>> d = ld.LD(graph)
     >>> d.draw()
 
-    .. image:: basic_example.png
+    .. image:: img/basic_example.png
         :width: 400
         :alt: Basic 3-level diagram with 2 couplings using all default settings
     """

@@ -37,7 +37,7 @@ Passing a simple graph to the basic level diagram constructor will produce a pas
    d = ld.LD(graph)
    d.draw()
 
-.. image:: basic_example.png
+.. image:: img/basic_example.png
 
 Global settings for the three primitive objects used by leveldiagram can be set by passing keyword argument dictionaries to the `LD` constructor.
 To control options for a single level or coupling,
@@ -57,7 +57,7 @@ Generally, the levels and couplings take standard matplotlib 2D line configurati
    d = ld.LD(graph, coupling_defaults = {'arrowsize':0.15,'lw':3})
    d.draw()
 
-.. image:: intermediate_example.png
+.. image:: img/intermediate_example.png
 
 With some basic scripting to create the graph appropriately,
 much more complicated level diagrams can be made with relative ease.
@@ -90,7 +90,7 @@ much more complicated level diagrams can be made with relative ease.
    d.ax.margins(y=0.2)
    d.draw()
 
-.. image:: hyperfine.png
+.. image:: img/hyperfine.png
 
 .. toctree::
    :maxdepth: 2

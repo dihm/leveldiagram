@@ -24,7 +24,7 @@ graph.add_edges_from(edges)
 d = ld.LD(graph)
 d.draw()
 ```
-![Simple 3-level diagram with default options](docs/source/basic_example.png)
+![Simple 3-level diagram with default options](https://raw.githubusercontent.com/dihm/leveldiagram/main/docs/source/img/basic_example.png)
 
 Global settings for the three primitive objects used by leveldiagram can be set by passing keyword argument dictionaries to the `LD` constructor.
 To control options for a single level or coupling,
@@ -43,7 +43,7 @@ graph.add_edges_from(edges)
 d = ld.LD(graph, coupling_defaults = {'arrowsize':0.15,'lw':3})
 d.draw()
 ```
-![3-level diagram with some custom options](docs/source/intermediate_example.png)
+![3-level diagram with some custom options](https://raw.githubusercontent.com/dihm/leveldiagram/main/docs/source/img/intermediate_example.png)
 
 With some basic scripting to create the graph appropriately,
 much more complicated level diagrams can be made with relative ease.
@@ -75,7 +75,7 @@ d = ld.LD(hf_graph, default_label = 'none')
 d.ax.margins(y=0.2)
 d.draw()
 ```
-![Hyperfine states with Clebsh-Gordon Coefficients](docs/source/hyperfine.png)
+![Hyperfine states with Clebsh-Gordon Coefficients](https://raw.githubusercontent.com/dihm/leveldiagram/main/docs/source/img/hyperfine.png)
 
 
 ## Installation
