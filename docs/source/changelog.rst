@@ -1,6 +1,22 @@
 Changelog
 =========
 
+v0.3.1
+------
+
+Improvements
+++++++++++++
+
+- Remove implicit assumption in `LD` that graph node keys must be integers or floats
+
+v0.3.0
+------
+
+Improvements
+++++++++++++
+
+- Many improvements for releasing, docs, and linting workflows
+
 v0.2.0
 ------
 

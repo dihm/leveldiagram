@@ -179,14 +179,14 @@ class LD:
         They are saved to the :attr:`levels` dictionary.
         """
 
-        for n in self._graph.nodes:
+        for i, n in enumerate(self._graph.nodes):
             if self.use_ld_kw:
                 node = self._graph.nodes[n].get('ld_kw', {}).copy()
             else:
                 node = self._graph.nodes[n].copy()
             # if x,y coords not defined, set using node index
-            node.setdefault("energy", n)
-            node.setdefault("xpos", n)
+            node.setdefault("energy", i)
+            node.setdefault("xpos", i)
 
             if self.default_label != "none":
                 node.setdefault(self.default_label, ket_str(n))
