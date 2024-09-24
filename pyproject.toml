@@ -1,3 +1,100 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = [ "setuptools>=64", "wheel", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = [ "src",]
+namespaces = false
+
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "no-local-version"
+
+[project]
+name = "leveldiagram"
+description = "Energy level diagram plotting from graphs"
+keywords = [ "physics", "diagram", "graph",]
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",]
+requires-python = ">= 3.8"
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "networkx",
+]
+dynamic = [ "version",]
+authors = [
+    {name = "David Meyer"},
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.license]
+text = "BSD-3-Clause"
+
+[project.optional-dependencies]
+docs = [
+    "Sphinx==7.2.6",
+    "sphinx-rtd-theme==2.0.0",
+    "nbconvert",
+    "pandoc",
+]
+mypy = [
+    "mypy",
+    "numpy>=1.21",
+    "lxml",
+]
+linter = [ "ruff",]
+
+### ruff configuration
+[tool.ruff]
+# longer line length
+line-length = 100
+# point to src directory
+src = ["src"]
+
+[tool.ruff.lint]
+# global additions
+extend-select = ["RUF100"]
+
+# global ignores
+ignore = [
+    "E231",
+    "E741",
+]
+
+# ignore import violations in __init__.py files
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+    "E501",
+    "F401",
+]
+
+### mypy configuration
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+show_error_codes = true
+files = "src/**/*.py"
+plugins = "numpy.typing.mypy_plugin"
+
+[[tool.mypy.overrides]]
+module = [
+    "matplotlib.*",
+    "networkx.*",
+]
+ignore_missing_imports = true
+

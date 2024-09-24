@@ -23,7 +23,7 @@ author = "David Meyer"
 
 release = importlib.metadata.version('leveldiagram')
 
-version = release
+version = ".".join(release.split('.')[:2])
 
 # HTML icons
 img_path = 'img'

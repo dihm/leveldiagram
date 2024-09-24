@@ -2,7 +2,6 @@
 Miscellaneous utility functions
 """
 
-import leveldiagram
 import platform
 from importlib.metadata import version
 
@@ -78,7 +77,7 @@ def about():
     ====================
     """
     print(header)
-    print(f'leveldiagram Version: {leveldiagram.__version__:s}')
+    print(f'leveldiagram Version: {version("leveldiagram"):s}')
     dep_header = """
         Dependencies
     ====================
