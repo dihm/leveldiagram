@@ -4,13 +4,21 @@ Miscellaneous utility functions
 
 import platform
 from importlib.metadata import version
+from collections.abc import Sequence
+import re
 
 from typing import Any
 
+seq_contents = r"[\(|\[\{](.*)[\)|\]\}]"
 
 def ket_str(s: Any) -> str:
     """
     Put a ket around the string in matplotlib.
+
+    If input is a Sequence, but not a str or dict,
+    the string representation will only show the container
+    contents. For a tuple `(1,2)`, the resulting ket
+    will have the form :math:`|1,2\\rangle`.
 
     Parameters:
         s: Object to be converted to string and placed inside a ket.
@@ -21,6 +29,11 @@ def ket_str(s: Any) -> str:
 
     in_s = str(s)
 
+    if not isinstance(s, str) and isinstance(s, Sequence):
+        # if sequence, but not string or dict, drop brackets in display
+        # use regex to handle more complex things like namedtuples
+        in_s = re.search(seq_contents, in_s).group(1)
+
     out_s = "$\\left|" + in_s + "\\right\\rangle$"
 
     return out_s
@@ -30,6 +43,11 @@ def bra_str(s: Any) -> str:
     """
     Put a bra around the string in matplotlib.
 
+    If input is a Sequence, but not a str or dict,
+    the string representation will only show the container
+    contents. For a tuple `(1,2)`, the resulting bra
+    will have the form :math:`\\langle1,2|`.
+
     Parameters:
         s: Object to be converted to a string and placed inside a bra.
 
@@ -38,6 +56,11 @@ def bra_str(s: Any) -> str:
     """
 
     in_s = str(s)
+
+    if not isinstance(s, str) and isinstance(s, Sequence):
+        # if sequence, but not string or dict, drop brackets in display
+        # use regex to handle more complex things like namedtuples
+        in_s = re.search(seq_contents, in_s).group(1)
 
     out_s = "$\\left\\langle" + in_s + "\\right|$"
 
