@@ -1,7 +1,7 @@
 name: Build and Release
 
 on:
-  create:
+  push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
 
@@ -15,12 +15,12 @@ jobs:
     if: github.repository_owner == 'dihm'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Install Build Tools
         run: |
@@ -35,7 +35,7 @@ jobs:
           python -m build -w .
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dist
           path: ./dist
@@ -50,7 +50,7 @@ jobs:
       contents: write
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: ./dist
@@ -61,7 +61,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Create Github Release and Upload Release Asset
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.ref }}
           name: ${{ env.PACKAGE_NAME }} ${{ env.VERSION }}
@@ -81,7 +81,7 @@ jobs:
       id-token: write
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: ./dist
